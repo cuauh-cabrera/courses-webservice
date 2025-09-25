@@ -5,6 +5,8 @@ import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
+import com.cuauh_cabrera.courses.CreateCourseDetailsRequest;
+import com.cuauh_cabrera.courses.CreateCourseDetailsResponse;
 import com.cuauh_cabrera.courses.GetAllCourseDetailsRequest;
 import com.cuauh_cabrera.courses.GetAllCourseDetailsResponse;
 import com.cuauh_cabrera.courses.GetCourseDetailsRequest;
@@ -23,6 +25,11 @@ public class CourseDetailsEndpoint {
 		this.courseDetailsService = courseDetailsService;
 	}
 	
+	/**
+	 * Endpoint to retrieve a list of all the Course and their details
+	 * @param request 
+	 * @return GetAllCourseDetailsResponse with the list of all Courses
+	 */
 	@PayloadRoot(namespace="http://cuauh-cabrera.com/courses", localPart="GetAllCourseDetailsRequest")
 	@ResponsePayload
 	public GetAllCourseDetailsResponse processAllCourseDetailsRequest(@RequestPayload GetAllCourseDetailsRequest request) {
@@ -33,9 +40,9 @@ public class CourseDetailsEndpoint {
 	}
 
 	/**
-	 * 
-	 * @param request
-	 * @return
+	 * Endpoint to retrieve CourseDetails information by the Course Id
+	 * @param request with the Course Id to be retrieved
+	 * @return GetCourseDetailsResponse with the Course Details information
 	 */
 	@PayloadRoot(namespace="http://cuauh-cabrera.com/courses", localPart="GetCourseDetailsRequest")
 	@ResponsePayload
@@ -44,6 +51,20 @@ public class CourseDetailsEndpoint {
 		log.info("Processing request to retrive Course Deatils Information");
 				
 		return courseDetailsService.findCourseById(request);
+	}
+	
+	/**
+	 * Endpoint to create a new CourseDetails object
+	 * @param request 
+	 * @return
+	 */
+	@PayloadRoot(namespace = "http://cuauh-cabrera.com/courses", localPart = "CreateCourseDetailsRequest")
+	@ResponsePayload
+	public CreateCourseDetailsResponse processCreateCourseRequest(@RequestPayload CreateCourseDetailsRequest request) {
+		
+		log.info("Processing request to create a new Course");
+		
+		return courseDetailsService.createCourse(request);
 	}
 
 }

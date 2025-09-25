@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +25,6 @@ import lombok.ToString;
 public class CourseDetailsEntity {
 	
 	@Id
-	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
@@ -35,6 +35,11 @@ public class CourseDetailsEntity {
 	private String description;
 	
 	@Column(name = "is_active")
-	private Boolean isActive;
+	@Builder.Default
+	private Boolean isActive = true;
+		
+	/*
+	 * @PrePersist private void onCreate() { this.isActive = true; }
+	 */
 
 }

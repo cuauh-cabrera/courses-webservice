@@ -1,13 +1,16 @@
 package com.webservice.soap.service.impl;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.cuauh_cabrera.courses.CourseDetails;
+import com.cuauh_cabrera.courses.CreateCourseDetailsRequest;
+import com.cuauh_cabrera.courses.CreateCourseDetailsResponse;
 import com.cuauh_cabrera.courses.GetAllCourseDetailsRequest;
 import com.cuauh_cabrera.courses.GetAllCourseDetailsResponse;
 import com.cuauh_cabrera.courses.GetCourseDetailsRequest;
 import com.cuauh_cabrera.courses.GetCourseDetailsResponse;
+import com.webservice.soap.entity.CourseDetailsEntity;
 import com.webservice.soap.mapper.CourseDetailsDataMapper;
 import com.webservice.soap.repository.ICourseDetailsRepository;
 import com.webservice.soap.service.ICourseDetailsService;
@@ -33,7 +36,7 @@ public class CourseDetailsServiceImpl  implements ICourseDetailsService{
 		try {
 			log.debug("Retrieving the list of all Courses");
 			
-			var courseList = courseDetailsRepository.findAllCourses();
+			var courseList = courseDetailsRepository.findAll();
 			
 			if(courseList.isEmpty()) {
 				log.warn("No Courses were retrieved. Courses list is empty");
@@ -53,29 +56,55 @@ public class CourseDetailsServiceImpl  implements ICourseDetailsService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public GetCourseDetailsResponse findCourseById(GetCourseDetailsRequest request) {
 		try {
 			log.debug("Retrieving Course with Id:{}", request.getId());
-			
+
 			var courseOptional = courseDetailsRepository.findById((long) request.getId());
-			
-			if(courseOptional.isEmpty()) {
-				log.warn("No Course found with Id:{}", request.getId());
-				throw new RuntimeException("No Course found with Id: " + request.getId());
+
+			if (courseOptional.isEmpty()) {
+				throw new RuntimeException("Unable to retrieve Course with Id: " + request.getId());
 			}
-			
-			log.info("Found Course with Id:{}", request.getId());
-			
-			var courseDetails = courseOptional.get();
-			
+
+			CourseDetails courseDetails = courseOptional.get();
+
 			GetCourseDetailsResponse response = new GetCourseDetailsResponse();
-			
 			response.setCourseDetails(courseDetails);
-			return response;	
-			
-		}catch (Exception e) {
+
+			return response;
+
+		} catch (Exception e) {
 			log.error("Error retriving Course Details");
 			throw new RuntimeException("Error retrieving Course. " + e.getMessage());
+		}
+	}
+
+	@Override
+	@Transactional
+	public CreateCourseDetailsResponse createCourse(CreateCourseDetailsRequest request) {
+		try {
+			log.debug("Creating new Course");
+			
+			CourseDetailsEntity courseEntity = courseDetailsDataMapper
+					.createCourseDetailsRequestToCourseDetailsEntity(request);
+						
+			var savedCourse = courseDetailsRepository.insert(courseDetailsDataMapper
+					.courseDetailsEntityToCreateCourseDetailsDto(courseEntity));
+			
+			log.info("New Course created with course Id:{}", savedCourse.getId());
+			
+			CreateCourseDetailsResponse response = new CreateCourseDetailsResponse();
+			
+			response.setId(savedCourse.getId());
+			response.setSuccess(true);
+			response.setMessage("Course created successfully");
+			
+			return response;
+			
+		}catch (Exception e) {
+			log.error("Error creating new Course");
+			throw new RuntimeException("Error creating new Course" + e.getMessage());
 		}
 	}
 	

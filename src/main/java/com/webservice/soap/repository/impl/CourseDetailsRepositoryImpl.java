@@ -5,15 +5,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
-
 import com.cuauh_cabrera.courses.CourseDetails;
+import com.webservice.soap.dto.CreateCourseDetailsDto;
 import com.webservice.soap.dto.UpdateCourseDetailsDto;
 import com.webservice.soap.entity.CourseDetailsEntity;
 import com.webservice.soap.mapper.CourseDetailsDataMapper;
 import com.webservice.soap.repository.CourseDetailsJpaRepository;
 import com.webservice.soap.repository.ICourseDetailsRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -30,7 +29,7 @@ public class CourseDetailsRepositoryImpl implements ICourseDetailsRepository{
 	}
 
 	@Override
-	public List<CourseDetails> findAllCourses() {
+	public List<CourseDetails> findAll() {
 		try {
 			log.debug("Querying the list of all Courses");
 
@@ -65,8 +64,7 @@ public class CourseDetailsRepositoryImpl implements ICourseDetailsRepository{
 			}
 			
 			log.warn("No Course Details were found for Course with Id: {}", id);
-			
-			throw new RuntimeException("Course Details not found with Id: " + id);
+			return Optional.empty();
 
 		}catch (Exception e) {
 			log.error("Error querying Course Details with Id: {}", id);
@@ -75,8 +73,7 @@ public class CourseDetailsRepositoryImpl implements ICourseDetailsRepository{
 	}
 
 	@Override
-	@Transactional
-	public void updateCourse(UpdateCourseDetailsDto updateCourseDetailsDto) {
+	public void update(UpdateCourseDetailsDto updateCourseDetailsDto) {
 		try {
 			log.debug("Searching Course with Id:{}", updateCourseDetailsDto.getId());
 						
@@ -102,7 +99,7 @@ public class CourseDetailsRepositoryImpl implements ICourseDetailsRepository{
 	}
 
 	@Override
-	public void setCourseStatus(Long id, boolean status) {
+	public void setIsActive(Long id, boolean status) {
 		try {
 			log.debug("Searching Course with Id:{}", id);
 			
@@ -129,7 +126,7 @@ public class CourseDetailsRepositoryImpl implements ICourseDetailsRepository{
 	}
 
 	@Override
-	public void deleteCourse(Long id) {
+	public void delete(Long id) {
 		try {
 			log.debug("Searching Course with Id:{}", id);
 			
@@ -150,6 +147,27 @@ public class CourseDetailsRepositoryImpl implements ICourseDetailsRepository{
 		}catch (Exception e) {
 			log.error("Error deleting Course with Id:{}", id);
 			throw new RuntimeException("Error deleting Course from Database with Id: " + id + e.getMessage());
+		}
+		
+	}
+
+	@Override
+	public CourseDetailsEntity insert(CreateCourseDetailsDto courseDetailsDto) {
+		try {
+			log.debug("Inserting new CourseDetails entity into the Database");
+			
+			CourseDetailsEntity courseEntity = courseDetailsDataMapper
+					.createCourseDetailsDtoToCourseDetailsEntity(courseDetailsDto);
+			
+			var savedCourse = courseDetailsJpaRepository.save(courseEntity);
+			
+			log.info("Course persisted in the Database");
+			
+			return savedCourse;
+						
+		}catch (Exception e) {
+			log.error("Error persisting CourseDetails entity");
+			throw new RuntimeException("Error inserting new Course into the Database" + e.getMessage());
 		}
 		
 	}
